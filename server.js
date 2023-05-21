@@ -1,4 +1,4 @@
-const { start_server, database_connect, app } = require('./settings');
+const { start_server, database_connect,authenticateToken, app } = require('./settings');
 const { usre_registration,get_all_users,user_login} = require('./user_account');
 
 const connection = database_connect();
@@ -27,7 +27,7 @@ app.post('/user_account/register', async (req, res) => {
     }
   });
 
-app.get("/user_account/get_all_users", async (req, res) => {
+app.get("/user_account/get_all_users",authenticateToken, async (req, res) => {
     try {
         const response = await get_all_users(connection);
         res.send(response);

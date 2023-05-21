@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
-const { app } = require('./settings');
+const jwt = require('jsonwebtoken');
+const { app,secret_key } = require('./settings');
 
 function usre_registration(body, connection) {
     return new Promise((resolve, reject) => {
@@ -50,7 +51,7 @@ function usre_registration(body, connection) {
   function user_login(data,connection){
     return new Promise((resolve, reject) => {
         connection.query(
-            "SELECT `name`, `email`, `token`,`password` FROM users WHERE `email` = ? AND `name`=?",
+            "SELECT `id`,`name`, `email`, `token`,`password` FROM users WHERE `email` = ? AND `name`=?",
             [data.email,data.username],
             function (err, rows, fields) {
               if (err) {
@@ -68,6 +69,12 @@ function usre_registration(body, connection) {
                         if (result) {
                           // Passwords match
                           console.log('Passwords match');
+
+                         // Generate JWT token
+                          const token = jwt.sign({ email: user.email, userId: user.id }, secret_key, {
+                            expiresIn: '9h' // Token expiration time
+                          });
+                          user["token"]=token
                           resolve(user);
                         } else {
                           // Passwords don't match
