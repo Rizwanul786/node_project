@@ -1,15 +1,15 @@
 const { start_server, database_connect, app } = require('./settings');
-const { usre_register,get_all_users} = require('./user_account');
+const { usre_registration,get_all_users,user_login} = require('./user_account');
 
 const connection = database_connect();
 start_server(); // Start the server
 
-app.post('/register', async (req, res) => {
+app.post('/user_account/register', async (req, res) => {
     try {
         if(req.body["username"]=='' || req.body["email"]=='' || req.body["password"]==''){
             res.send({"message":"Values Can't be null or empty"})
         }else{
-            const response = await usre_register(req.body, connection);
+            const response = await usre_registration(req.body, connection);
             res.send(response);
         }
     } catch (error) {
@@ -17,7 +17,17 @@ app.post('/register', async (req, res) => {
     }
   });
 
-app.get("/get_all_users", async (req, res) => {
+  app.post('/user_account/login', async (req, res) => {
+    try {
+        const response = await user_login(req.body, connection);
+        res.send(response);
+        
+    } catch (error) {
+      res.status(500).send({ error:error });
+    }
+  });
+
+app.get("/user_account/get_all_users", async (req, res) => {
     try {
         const response = await get_all_users(connection);
         res.send(response);

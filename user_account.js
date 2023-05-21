@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const { app } = require('./settings');
 
-function usre_register(body, connection) {
+function usre_registration(body, connection) {
     return new Promise((resolve, reject) => {
       const { username, email, password } = body;
       
@@ -47,4 +47,41 @@ function usre_register(body, connection) {
         });
     })
   }
-  module.exports = {usre_register,get_all_users };
+  function user_login(data,connection){
+    return new Promise((resolve, reject) => {
+        connection.query(
+            "SELECT `name`, `email`, `token`,`password` FROM users WHERE `email` = ? AND `name`=?",
+            [data.email,data.username],
+            function (err, rows, fields) {
+              if (err) {
+                reject({ error: err, status_code: 500 });
+                return;
+              } else {
+                if (rows.length>0){
+                    const user=rows[0]
+                    bcrypt.compare(data.password, user.password, (err, result) => {
+                        if (err) {
+                          // Handle the error
+                          console.error('Error comparing passwords:', err);
+                          return;
+                        }
+                        if (result) {
+                          // Passwords match
+                          console.log('Passwords match');
+                          resolve(user);
+                        } else {
+                          // Passwords don't match
+                          console.log("Passwords don't match");
+                          reject({ error: "Passwords don't match", status_code: 404 });
+                          return;
+                        }
+                      });
+                }
+                else{
+                    reject({ error: "user not found", status_code: 404 });
+                }
+              }
+            });
+    })
+  }
+  module.exports = {usre_registration,get_all_users,user_login };
