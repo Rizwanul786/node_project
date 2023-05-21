@@ -36,18 +36,62 @@ app.get("/user_account/get_all_users",authenticateToken, async (req, res) => {
     }
 });
 
-app.post('/add_items', (req,res) => {
-    var sql = "INSERT INTO BankData (name, city, age, gender, payment) VALUES ?";
-    var values = req.body
-    connection.query(sql, { params: values }, function (err) {
-        if (err){
-            throw err
-        }
-        else{
+app.post('/add_item', authenticateToken, (req, res) => {
+    var sql = "INSERT INTO BankData (name, city, age, gender, payment) VALUES (?, ?, ?, ?, ?)";
+    var values = [req.body];
+
+    connection.query(sql, values, function (err) {
+        if (err) {
+            throw err;
+        } else {
             res.status(200).json({ message: 'Data inserted successfully' });
         }
     });
-})
+});
+app.post('/add_items_in_bulk', authenticateToken, (req, res) => {
+    var sql = "INSERT INTO BankData (name, city, age, gender, payment) VALUES ?";
+    var values = req.body.map(item => [item.name, item.city, item.age, item.gender, item.payment]);
+
+    connection.query(sql, [values], function (err) {
+        if (err) {
+            throw err;
+        } else {
+            res.status(200).json({ message: 'Data inserted successfully' });
+        }
+    });
+});
+
+app.post('/add_items', authenticateToken, (req, res) => {
+    var values = req.body.map(item => [item.name, item.city, item.age, item.gender, item.payment]);
+
+    // Check for duplicate entries based on the name column
+    var duplicateNames = values.map(value => value[0]); // Extract name values
+    var duplicateCheckQuery = "SELECT name FROM BankData WHERE name IN (?)";
+    
+    connection.query(duplicateCheckQuery, [duplicateNames], function (err, results) {
+        if (err) {
+            throw err;
+        } else {
+            var duplicateEntries = results.map(result => result.name);
+            var uniqueValues = values.filter(value => !duplicateEntries.includes(value[0]));
+
+            if (uniqueValues.length === 0) {
+                res.status(400).json({ message: 'All entries are duplicates' });
+            } else {
+                var sql = "INSERT INTO BankData (name, city, age, gender, payment) VALUES ?";
+    
+                connection.query(sql, [uniqueValues], function (err) {
+                    if (err) {
+                        throw err;
+                    } else {
+                        res.status(200).json({ message: 'Data inserted successfully' });
+                    }
+                });
+            }
+        }
+    });
+});
+
 
 // app.get("/delete/:id",function(req,res){
 //     let id=req.params.id;

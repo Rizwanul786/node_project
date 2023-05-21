@@ -51,7 +51,7 @@ function authenticateToken(req, res, next) {
     if (err) {
       return res.status(403).json({ error: 'Invalid token' });
     }
-
+    
     // Attach the decoded user information to the request object
     req.user = decoded;
     next();
