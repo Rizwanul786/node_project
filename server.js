@@ -1,5 +1,5 @@
 const { start_server, database_connect, app } = require('./settings');
-const { usre_register} = require('./user_account');
+const { usre_register,get_all_users} = require('./user_account');
 
 const connection = database_connect();
 start_server(); // Start the server
@@ -17,15 +17,13 @@ app.post('/register', async (req, res) => {
     }
   });
 
-app.get("/get_all_customer", function (req, res) {
-    connection.query("SELECT * FROM BankData", function (err, rows, fields) {
-        if (err) {
-            console.log("somthing error in the query");
-        } else {
-            console.log("success");
-            res.json(rows);
-        }
-    });
+app.get("/get_all_users", async (req, res) => {
+    try {
+        const response = await get_all_users(connection);
+        res.send(response);
+    } catch (error) {
+      res.status(500).send({ error:error });
+    }
 });
 
 app.post('/add_items', (req,res) => {

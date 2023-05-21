@@ -35,4 +35,16 @@ function usre_register(body, connection) {
     });
   }
 
-  module.exports = {usre_register };
+  function get_all_users(connection){
+    return new Promise((resolve, reject) => {
+        connection.query("SELECT `id`,`name`,`email` FROM users", function (err, rows, fields) {
+            if (err) {
+                reject({ error: err, status_code: 500 });
+                return;
+            } else {
+                resolve(rows);
+            }
+        });
+    })
+  }
+  module.exports = {usre_register,get_all_users };
