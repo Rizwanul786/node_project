@@ -1,7 +1,21 @@
 const { start_server, database_connect, app } = require('./settings');
+const { usre_register} = require('./user_account');
 
 const connection = database_connect();
 start_server(); // Start the server
+
+app.post('/register', async (req, res) => {
+    try {
+        if(req.body["username"]=='' || req.body["email"]=='' || req.body["password"]==''){
+            res.send({"message":"Values Can't be null or empty"})
+        }else{
+            const response = await usre_register(req.body, connection);
+            res.send(response);
+        }
+    } catch (error) {
+      res.status(500).send({ error:error });
+    }
+  });
 
 app.get("/get_all_customer", function (req, res) {
     connection.query("SELECT * FROM BankData", function (err, rows, fields) {

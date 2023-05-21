@@ -21,7 +21,7 @@ function database_connect() {
     host: 'localhost',
     user: 'root',
     password: 'Password@101',
-    database: 'data_pipe'
+    database: 'bank_info'
   });
 
   connection.connect(function(err) {
